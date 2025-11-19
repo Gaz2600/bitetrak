@@ -1,26 +1,106 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-slate-50 text-slate-900;
+}
+@media print {
+
+  /* ====== PAGE SETTINGS ====== */
+  @page {
+    size: letter landscape;     /* Suggest landscape to Chrome */
+    margin: 0.5in;              /* Comfortable fridge margin */
+  }
+
+  /* ====== RESET BODY ====== */
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    font-size: 11px !important;
+  }
+
+  /* Hide navigation, form, and on-screen-only elements */
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  /* ====== MAIN PRINT LAYOUT ====== */
+  .dashboard-page {
+    max-width: none !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .print-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    border: 1px solid #9ca3af !important;  /* slate-400 */
+    border-radius: 6px !important;
+    padding: 0.35in !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+  }
+
+  /* ====== HEADER ====== */
+  .print-header {
+    margin-bottom: 0.25in !important;
+    padding-bottom: 0.1in !important;
+    border-bottom: 1px solid #d1d5db !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 0.3in !important;
+  }
+
+  .print-header h2 {
+    font-size: 16px !important;
+    margin: 0 !important;
+  }
+
+  .print-header p,
+  .print-header .print-notes {
+    font-size: 11px !important;
+    margin: 0 !important;
+  }
+
+  /* ====== SHOW TABLE, HIDE SCREEN GRID ====== */
+  .screen-week {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* ====== TABLE FORMATTING ====== */
+  .print-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;   /* Keeps column widths even */
+    font-size: 11px !important;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #d1d5db !important;
+    padding: 6px 8px !important;
+    vertical-align: top !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;   /* Wraps long text instead of squishing */
+  }
+
+  .print-table th {
+    background: #f3f4f6 !important;   /* slate-100 */
+    font-weight: 600 !important;
+    text-align: left !important;
+  }
 }
