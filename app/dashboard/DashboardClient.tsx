@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 
 type Meal = {
   label: string;
@@ -40,7 +39,7 @@ function prettyDietLabel(diet: string) {
 }
 
 export default function DashboardClient() {
-  // Base defaults
+  // Core settings
   const [calories, setCalories] = useState("2100");
   const [diet, setDiet] = useState("balanced");
   const [ibsSafe, setIbsSafe] = useState(true);
@@ -57,40 +56,44 @@ export default function DashboardClient() {
   const [displayName, setDisplayName] = useState("");
   const [weekOf, setWeekOf] = useState("");
 
-  // Load settings from query params + localStorage on first client render
+  // Load stored name from localStorage once
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = window.localStorage.getItem("bitetrakDisplayName");
+    if (stored && !displayName) {
+      setDisplayName(stored);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Load query params from the URL once on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     const params = new URLSearchParams(window.location.search);
 
-    const qCalories = params.get("calories");
-    const qDiet = params.get("diet");
-    const qIbs = params.get("ibsSafe");
-    const qGluten = params.get("glutenFree");
-    const qImmune = params.get("immuneSafe");
-    const qMeals = params.get("mealsPerDay") as "3" | "5" | null;
-    const qName = params.get("name");
-    const qWeekOf = params.get("weekOf");
+    const caloriesParam = params.get("calories");
+    const dietParam = params.get("diet");
+    const ibsParam = params.get("ibsSafe");
+    const glutenParam = params.get("glutenFree");
+    const immuneParam = params.get("immuneSafe");
+    const mealsParam = params.get("mealsPerDay");
+    const nameParam = params.get("name");
+    const weekOfParam = params.get("weekOf");
 
-    if (qCalories) setCalories(qCalories);
-    if (qDiet) setDiet(qDiet);
-    if (qIbs !== null) setIbsSafe(qIbs === "true");
-    if (qGluten !== null) setGlutenFree(qGluten === "true");
-    if (qImmune !== null) setImmuneSafe(qImmune === "true");
-    if (qMeals === "3" || qMeals === "5") setMealsPerDay(qMeals);
+    if (caloriesParam) setCalories(caloriesParam);
+    if (dietParam) setDiet(dietParam);
 
-    const storedName = window.localStorage.getItem("bitetrakDisplayName");
+    if (ibsParam !== null) setIbsSafe(ibsParam === "true");
+    if (glutenParam !== null) setGlutenFree(glutenParam === "true");
+    if (immuneParam !== null) setImmuneSafe(immuneParam === "true");
 
-    if (qName) {
-      setDisplayName(qName);
-    } else if (storedName) {
-      setDisplayName(storedName);
-    }
-
-    if (qWeekOf) setWeekOf(qWeekOf);
+    if (mealsParam === "5") setMealsPerDay("5");
+    if (nameParam) setDisplayName(nameParam);
+    if (weekOfParam) setWeekOf(weekOfParam);
   }, []);
 
-  // Keep name in localStorage
+  // Persist name to localStorage when it changes
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (displayName) {
