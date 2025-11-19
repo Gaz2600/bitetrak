@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 
 type Meal = {
   label: string;
@@ -40,27 +39,13 @@ function prettyDietLabel(diet: string) {
 }
 
 export default function DashboardClient() {
-  const searchParams = useSearchParams();
-
-  const initialCalories = searchParams.get("calories") ?? "2100";
-  const initialDiet = searchParams.get("diet") ?? "balanced";
-  const initialIbs = searchParams.get("ibsSafe");
-  const initialGluten = searchParams.get("glutenFree");
-  const initialImmune = searchParams.get("immuneSafe");
-  const initialMealsPerDayParam = searchParams.get("mealsPerDay");
-  const initialName = searchParams.get("name");
-  const initialWeekOf = searchParams.get("weekOf");
-
-  const [calories, setCalories] = useState(initialCalories);
-  const [diet, setDiet] = useState(initialDiet);
-  const [ibsSafe, setIbsSafe] = useState(
-    initialIbs === null ? true : initialIbs === "true"
-  );
-  const [glutenFree, setGlutenFree] = useState(initialGluten === "true");
-  const [immuneSafe, setImmuneSafe] = useState(initialImmune === "true");
-  const [mealsPerDay, setMealsPerDay] = useState(
-    initialMealsPerDayParam === "5" ? "5" : "3"
-  ); // "3" or "5"
+  // Base defaults
+  const [calories, setCalories] = useState("2100");
+  const [diet, setDiet] = useState("balanced");
+  const [ibsSafe, setIbsSafe] = useState(true);
+  const [glutenFree, setGlutenFree] = useState(false);
+  const [immuneSafe, setImmuneSafe] = useState(false);
+  const [mealsPerDay, setMealsPerDay] = useState<"3" | "5">("3");
 
   // Column visibility options (dashboard + print)
   const [showKcal, setShowKcal] = useState(true);
@@ -68,18 +53,43 @@ export default function DashboardClient() {
   const [showTotalPerDay, setShowTotalPerDay] = useState(true);
 
   // Print details: Name + Week of
-  const [displayName, setDisplayName] = useState(initialName ?? "");
-  const [weekOf, setWeekOf] = useState(initialWeekOf ?? "");
+  const [displayName, setDisplayName] = useState("");
+  const [weekOf, setWeekOf] = useState("");
 
-  // Remember name across visits in this browser
+  // Load settings from query params + localStorage on first client render
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const stored = window.localStorage.getItem("bitetrakDisplayName");
-    // only override if query didn’t supply a name
-    if (stored && !initialName) setDisplayName(stored);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    const params = new URLSearchParams(window.location.search);
+
+    const qCalories = params.get("calories");
+    const qDiet = params.get("diet");
+    const qIbs = params.get("ibsSafe");
+    const qGluten = params.get("glutenFree");
+    const qImmune = params.get("immuneSafe");
+    const qMeals = params.get("mealsPerDay") as "3" | "5" | null;
+    const qName = params.get("name");
+    const qWeekOf = params.get("weekOf");
+
+    if (qCalories) setCalories(qCalories);
+    if (qDiet) setDiet(qDiet);
+    if (qIbs !== null) setIbsSafe(qIbs === "true");
+    if (qGluten !== null) setGlutenFree(qGluten === "true");
+    if (qImmune !== null) setImmuneSafe(qImmune === "true");
+    if (qMeals === "3" || qMeals === "5") setMealsPerDay(qMeals);
+
+    const storedName = window.localStorage.getItem("bitetrakDisplayName");
+
+    if (qName) {
+      setDisplayName(qName);
+    } else if (storedName) {
+      setDisplayName(storedName);
+    }
+
+    if (qWeekOf) setWeekOf(qWeekOf);
   }, []);
 
+  // Keep name in localStorage
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (displayName) {
@@ -214,7 +224,7 @@ export default function DashboardClient() {
             </label>
             <select
               value={mealsPerDay}
-              onChange={(e) => setMealsPerDay(e.target.value)}
+              onChange={(e) => setMealsPerDay(e.target.value as "3" | "5")}
               className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-btBlue focus:border-btBlue"
             >
               <option value="3">3 meals (classic)</option>
