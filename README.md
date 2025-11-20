@@ -1,182 +1,161 @@
-🍽️ BiteTrak
-AI-Powered Weekly Meal Planning
+# 🍽️ BiteTrak  
+### AI-Powered Weekly Meal Planning
 
-BiteTrak is a modern, AI-assisted meal-planning application built with Next.js, React, and TailwindCSS.
+BiteTrak is a modern, AI-assisted meal-planning application built with Next.js, React, and TailwindCSS.  
 It helps users generate structured weekly meal plans based on:
 
-Daily calorie targets
+- Daily calorie targets  
+- Diet styles (balanced, high-protein, keto, Mediterranean, etc.)  
+- Medical needs (IBS-safe, gluten-free, immune-safe)  
+- 3-meal or 5-meal per-day preferences  
+- Printable weekly layouts for fridge/PDF  
 
-Diet styles (balanced, high-protein, keto, Mediterranean, etc.)
+---
 
-Medical needs (IBS-safe, gluten-free, immune-safe)
+## 🚀 Live Demo
 
-3-meal or 5-meal per-day preferences
+https://bitetrak.vercel.app  
+Automatically deployed using Vercel.
 
-Printable weekly layouts for fridge/PDF
+---
 
-🚀 Live Demo
+## 🖼️ Screenshots (placeholders)
 
-https://bitetrak.vercel.app
+![Landing Page](docs/screenshots/landing.png)  
+![Dashboard](docs/screenshots/dashboard.png)  
+![Print Layout](docs/screenshots/print.png)
 
-Automatically deployed from GitHub using Vercel.
+---
 
-🖼️ Screenshots
+## 🧰 Tech Stack
 
-(Add your own screenshots later)
+- Next.js 16 (App Router)  
+- React 18  
+- TailwindCSS  
+- TypeScript  
+- Vercel hosting + serverless API routes  
 
+---
 
+## 📦 Features
 
+### ✔️ Landing Page  
+- Set calories, diet, medical flags, meals per day  
+- Name + “Week of” fields for print header  
+- Passes values to dashboard via query params  
 
+### ✔️ Planner Dashboard  
+- Generate a mock 7-day plan  
+- Meals with name, calories, diet tags  
+- Supports 3-meal and 5-meal formats  
+- Column toggles: Calories, Tags, Daily Totals  
+- Print/save as PDF  
 
+### ✔️ Print Mode  
+- Full-page print-optimized layout  
+- Professional table styling  
+- Name + Week-of header  
+- Works for both 3-meal and 5-meal table types  
 
-🧰 Tech Stack
+---
 
-Next.js 16 (App Router)
+## 🛠️ Development
 
-React 18
+### Install
 
-TailwindCSS
+    git clone https://github.com/Gaz2600/bitetrak.git
+    cd bitetrak
+    npm install
 
-TypeScript
+### Run locally
 
-Vercel (hosting + serverless API routes)
+    npm run dev
 
-📦 Features
-✔️ Landing Page
+Visit:  
+http://localhost:3000
 
-Set calories, diet, medical flags, meals per day
+### Build
 
-Name + “Week of” fields for print header
+    npm run build
 
-Passes values to dashboard via query params
+---
 
-✔️ Planner Dashboard
+## 🧪 API Routes
 
-Generate a mock 7-day plan
+### POST /api/generate-plan  
 
-Meals with name, calories, diet tags
+**Input example:**  
+    {
+      "calories": 2100,
+      "diet": "balanced",
+      "ibsSafe": true,
+      "glutenFree": false,
+      "immuneSafe": false,
+      "mealsPerDay": 3
+    }
 
-3-meal and 5-meal structures
+**Output example (mock):**  
+    {
+      "calories": 2100,
+      "diet": "balanced",
+      "flags": ["IBS-safe"],
+      "mealsPerDay": 3,
+      "week": [
+        {
+          "day": "Monday",
+          "totalCalories": 2100,
+          "meals": [
+            { "label": "Breakfast", "name": "Oatmeal", "kcal": 550, "tag": "balanced" }
+          ]
+        }
+      ]
+    }
 
-Column toggles: Calories, Tags, Totals
+---
 
-Print/save as PDF
+## 📅 Roadmap
 
-✔️ Print Mode
+### v0.2 — AI Meal Generation  
+- Replace mock data with OpenAI/Anthropic  
+- Validate JSON and enforce structure  
 
-Full-page print-optimized layout
+### v0.3 — Nutrition Database  
+- Local recipe dataset  
+- Integrations: USDA, Edamam, Spoonacular  
 
-Professional table format
+### v0.4 — Grocery Lists  
+- Auto-group ingredients  
+- Weekly printable grocery PDF  
 
-Name + Week-of header
+### v0.5 — Saved Plans / Accounts  
+- LocalStorage save slots  
+- Optional cloud storage + auth  
 
-Supports both 3-meal and 5-meal formats
+---
 
-🛠️ Development
-Install
+## 🗂️ Project Structure
 
-git clone https://github.com/Gaz2600/bitetrak.git
+    app/
+      page.tsx
+      dashboard/
+        page.tsx
+        DashboardClient.tsx
+      api/
+        generate-plan/
+          route.ts
 
-cd bitetrak
-npm install
+    public/
+    styles/
+    tailwind.config.js
+    package.json
 
-Run locally
+---
 
-npm run dev
-Visit: http://localhost:3000
-
-Build
-
-npm run build
-
-🧪 API Routes
-POST /api/generate-plan
-
-Input:
-{
-"calories": 2100,
-"diet": "balanced",
-"ibsSafe": true,
-"glutenFree": false,
-"immuneSafe": false,
-"mealsPerDay": 3
-}
-
-Output (mock):
-{
-"calories": 2100,
-"diet": "balanced",
-"flags": ["IBS-safe"],
-"mealsPerDay": 3,
-"week": [
-{
-"day": "Monday",
-"totalCalories": 2100,
-"meals": [
-{ "label": "Breakfast", "name": "Oatmeal", "kcal": 550, "tag": "balanced" }
-]
-}
-]
-}
-
-📅 Roadmap
-v0.2 — AI Meal Generation
-
-Replace mock data with OpenAI/Anthropic
-
-JSON validation + structure enforcement
-
-v0.3 — Nutrition Database
-
-Built-in recipe dataset
-
-Integrations: USDA, Edamam, Spoonacular
-
-v0.4 — Grocery Lists
-
-Auto-combined ingredients
-
-Weekly PDF export
-
-v0.5 — Saved Plans / Accounts
-
-LocalStorage save slots
-
-Optional cloud storage + login
-
-🗂️ Project Structure
-
-app/
-page.tsx
-dashboard/
-page.tsx
-DashboardClient.tsx
-api/
-generate-plan/route.ts
-
-public/
-styles/
-tailwind.config.js
-package.json
-
-🤝 Contributing
+## 🤝 Contributing
 
 Pull requests and suggestions are welcome.
 
-📄 License
+---
 
+## 📄 License  
 MIT License © 2025 Mike Guizzetti
-
-✔️ This version will NOT break when you paste it into GitHub.
-
-If you'd like, I can also:
-
-Generate a logo
-
-Create a CONTRIBUTING.md
-
-Create a ROADMAP.md
-
-Add repository badges (MIT, Vercel Deploy, Next.js, etc.)
-
-Just tell me!
