@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 
 type Meal = {
   label: string;
@@ -112,7 +112,7 @@ export default function DashboardClient() {
   const flagSummary =
     flagLabels.length > 0 ? flagLabels.join(" • ") : "General plan";
 
-  async function handleGenerate(e?: React.FormEvent) {
+  async function handleGenerate(e?: FormEvent<HTMLFormElement>) {
     if (e) e.preventDefault();
     setLoading(true);
     setError(null);
@@ -139,8 +139,12 @@ export default function DashboardClient() {
 
       const data = (await res.json()) as ApiResponse;
       setWeek(data.week);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Something went wrong");
+      } else {
+        setError("Something went wrong");
+      }
     } finally {
       setLoading(false);
     }
@@ -533,9 +537,7 @@ export default function DashboardClient() {
                                     <div className="font-semibold">
                                       {m.name}
                                     </div>
-                                    {showKcal && (
-                                      <div>{m.kcal} kcal</div>
-                                    )}
+                                    {showKcal && <div>{m.kcal} kcal</div>}
                                     {showTags && <div>{m.tag}</div>}
                                   </>
                                 )}
@@ -556,3 +558,4 @@ export default function DashboardClient() {
     </section>
   );
 }
+
