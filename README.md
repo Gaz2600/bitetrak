@@ -1,36 +1,182 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+🍽️ BiteTrak
+AI-Powered Weekly Meal Planning
 
-## Getting Started
+BiteTrak is a modern, AI-assisted meal-planning application built with Next.js, React, and TailwindCSS.
+It helps users generate structured weekly meal plans based on:
 
-First, run the development server:
+Daily calorie targets
 
-```bash
+Diet styles (balanced, high-protein, keto, Mediterranean, etc.)
+
+Medical needs (IBS-safe, gluten-free, immune-safe)
+
+3-meal or 5-meal per-day preferences
+
+Printable weekly layouts for fridge/PDF
+
+🚀 Live Demo
+
+https://bitetrak.vercel.app
+
+Automatically deployed from GitHub using Vercel.
+
+🖼️ Screenshots
+
+(Add your own screenshots later)
+
+
+
+
+
+
+🧰 Tech Stack
+
+Next.js 16 (App Router)
+
+React 18
+
+TailwindCSS
+
+TypeScript
+
+Vercel (hosting + serverless API routes)
+
+📦 Features
+✔️ Landing Page
+
+Set calories, diet, medical flags, meals per day
+
+Name + “Week of” fields for print header
+
+Passes values to dashboard via query params
+
+✔️ Planner Dashboard
+
+Generate a mock 7-day plan
+
+Meals with name, calories, diet tags
+
+3-meal and 5-meal structures
+
+Column toggles: Calories, Tags, Totals
+
+Print/save as PDF
+
+✔️ Print Mode
+
+Full-page print-optimized layout
+
+Professional table format
+
+Name + Week-of header
+
+Supports both 3-meal and 5-meal formats
+
+🛠️ Development
+Install
+
+git clone https://github.com/Gaz2600/bitetrak.git
+
+cd bitetrak
+npm install
+
+Run locally
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Visit: http://localhost:3000
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Build
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+npm run build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+🧪 API Routes
+POST /api/generate-plan
 
-## Learn More
+Input:
+{
+"calories": 2100,
+"diet": "balanced",
+"ibsSafe": true,
+"glutenFree": false,
+"immuneSafe": false,
+"mealsPerDay": 3
+}
 
-To learn more about Next.js, take a look at the following resources:
+Output (mock):
+{
+"calories": 2100,
+"diet": "balanced",
+"flags": ["IBS-safe"],
+"mealsPerDay": 3,
+"week": [
+{
+"day": "Monday",
+"totalCalories": 2100,
+"meals": [
+{ "label": "Breakfast", "name": "Oatmeal", "kcal": 550, "tag": "balanced" }
+]
+}
+]
+}
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+📅 Roadmap
+v0.2 — AI Meal Generation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Replace mock data with OpenAI/Anthropic
 
-## Deploy on Vercel
+JSON validation + structure enforcement
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+v0.3 — Nutrition Database
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built-in recipe dataset
+
+Integrations: USDA, Edamam, Spoonacular
+
+v0.4 — Grocery Lists
+
+Auto-combined ingredients
+
+Weekly PDF export
+
+v0.5 — Saved Plans / Accounts
+
+LocalStorage save slots
+
+Optional cloud storage + login
+
+🗂️ Project Structure
+
+app/
+page.tsx
+dashboard/
+page.tsx
+DashboardClient.tsx
+api/
+generate-plan/route.ts
+
+public/
+styles/
+tailwind.config.js
+package.json
+
+🤝 Contributing
+
+Pull requests and suggestions are welcome.
+
+📄 License
+
+MIT License © 2025 Mike Guizzetti
+
+✔️ This version will NOT break when you paste it into GitHub.
+
+If you'd like, I can also:
+
+Generate a logo
+
+Create a CONTRIBUTING.md
+
+Create a ROADMAP.md
+
+Add repository badges (MIT, Vercel Deploy, Next.js, etc.)
+
+Just tell me!
