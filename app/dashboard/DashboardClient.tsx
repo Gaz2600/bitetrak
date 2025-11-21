@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect } from "react";
+import type { GeneratePlanResponse } from "@/types/api";
 
 type Meal = {
   label: string;
@@ -13,14 +14,6 @@ type DayPlan = {
   day: string;
   totalCalories: number;
   meals: Meal[];
-};
-
-type ApiResponse = {
-  calories: number;
-  diet: string;
-  flags: string[];
-  mealsPerDay: number;
-  week: DayPlan[];
 };
 
 function prettyDietLabel(diet: string) {
@@ -112,7 +105,7 @@ export default function DashboardClient() {
   const flagSummary =
     flagLabels.length > 0 ? flagLabels.join(" • ") : "General plan";
 
-  async function handleGenerate(e?: FormEvent<HTMLFormElement>) {
+  async function handleGenerate(e?: React.FormEvent) {
     if (e) e.preventDefault();
     setLoading(true);
     setError(null);
@@ -137,11 +130,11 @@ export default function DashboardClient() {
         throw new Error(`Request failed with status ${res.status}`);
       }
 
-      const data = (await res.json()) as ApiResponse;
+      const data = (await res.json()) as GeneratePlanResponse;
       setWeek(data.week);
     } catch (err: unknown) {
       if (err instanceof Error) {
-        setError(err.message || "Something went wrong");
+        setError(err.message);
       } else {
         setError("Something went wrong");
       }
@@ -293,7 +286,7 @@ export default function DashboardClient() {
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="e.g., Mike"
+                  placeholder="e.g. Mike"
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-btBlue focus:border-btBlue"
                 />
               </div>
@@ -305,7 +298,7 @@ export default function DashboardClient() {
                   type="text"
                   value={weekOf}
                   onChange={(e) => setWeekOf(e.target.value)}
-                  placeholder="e.g., Feb 24 – Mar 2"
+                  placeholder="e.g. Feb 24 – Mar 2"
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-btBlue focus:border-btBlue"
                 />
               </div>
@@ -354,7 +347,7 @@ export default function DashboardClient() {
               disabled={loading}
               className="inline-flex items-center justify-center rounded-full bg-btBlue px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-btBlue/30 hover:bg-btBlueDark transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? "Generating..." : "Generate week"}
+              {loading ? "Generating." : "Generate week"}
             </button>
             <button
               type="button"
@@ -537,7 +530,9 @@ export default function DashboardClient() {
                                     <div className="font-semibold">
                                       {m.name}
                                     </div>
-                                    {showKcal && <div>{m.kcal} kcal</div>}
+                                    {showKcal && (
+                                      <div>{m.kcal} kcal</div>
+                                    )}
                                     {showTags && <div>{m.tag}</div>}
                                   </>
                                 )}
@@ -558,4 +553,3 @@ export default function DashboardClient() {
     </section>
   );
 }
-
