@@ -9,12 +9,34 @@
 body {
   @apply bg-slate-50 text-slate-900;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Screen vs print helpers */
+.print-only {
+  display: none;
+}
+
+/* Optional: main dashboard wrapper if you use this class */
+.dashboard-page {
+  /* screen styles are mostly handled via Tailwind in JSX */
+}
+
+/* ====== PRINT STYLES ====== */
 @media print {
 
   /* ====== PAGE SETTINGS ====== */
   @page {
-    size: letter landscape;     /* Suggest landscape to Chrome */
-    margin: 0.5in;              /* Comfortable fridge margin */
+    size: letter landscape;     /* Landscape fridge sheet */
+    margin: 0.25in;            /* Narrow margins for max space */
+  }
+
+  /* Improve color fidelity when printing */
+  body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   /* ====== RESET BODY ====== */
@@ -44,35 +66,83 @@ body {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    border: 1px solid #9ca3af !important;  /* slate-400 */
-    border-radius: 6px !important;
-    padding: 0.35in !important;
+    border: 2px solid #0f172a !important;  /* slate-900 */
+    border-radius: 8px !important;
+    padding: 0.25in 0.12in !important;
     margin: 0 auto !important;
     box-shadow: none !important;
+    background: #ffffff !important;
   }
 
-  /* ====== HEADER ====== */
+  /* ====== HEADER STRIP ====== */
   .print-header {
-    margin-bottom: 0.25in !important;
+    margin-bottom: 0.2in !important;
     padding-bottom: 0.1in !important;
-    border-bottom: 1px solid #d1d5db !important;
+    border-bottom: 1px solid #e5e7eb !important;
     display: flex !important;
     justify-content: space-between !important;
+    align-items: flex-start !important;
     gap: 0.3in !important;
   }
 
+  .print-header-main {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+  }
+
   .print-header h2 {
-    font-size: 16px !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
     margin: 0 !important;
   }
 
-  .print-header p,
-  .print-header .print-notes {
+  .print-header-sub {
     font-size: 11px !important;
+    color: #4b5563 !important; /* slate-600 */
     margin: 0 !important;
   }
 
-  /* ====== SHOW TABLE, HIDE SCREEN GRID ====== */
+  .print-header-meta {
+    text-align: right !important;
+    font-size: 11px !important;
+    color: #4b5563 !important;
+  }
+
+  .print-notes {
+    margin-top: 0.05in !important;
+    font-size: 10px !important;
+    color: #6b7280 !important; /* slate-500 */
+  }
+
+  /* ====== LEGEND / BADGES EXPLANATION ====== */
+  .print-legend {
+    margin-bottom: 0.15in !important;
+    font-size: 10px !important;
+    color: #4b5563 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+
+  .print-legend span::before {
+    content: "■ ";
+    font-size: 10px;
+  }
+
+  .legend-ibs::before {
+    color: #22c55e; /* green-500 */
+  }
+
+  .legend-gf::before {
+    color: #3b82f6; /* blue-500 */
+  }
+
+  .legend-immune::before {
+    color: #facc15; /* yellow-400 */
+  }
+
+  /* ====== SHOW PRINT LAYOUT, HIDE SCREEN GRID ====== */
   .screen-week {
     display: none !important;
   }
@@ -82,7 +152,8 @@ body {
   }
 
   /* ====== TABLE FORMATTING ====== */
-  .print-table {
+  .print-table,
+  table.meal-table {
     width: 100% !important;
     border-collapse: collapse !important;
     table-layout: fixed !important;   /* Keeps column widths even */
@@ -90,17 +161,76 @@ body {
   }
 
   .print-table th,
-  .print-table td {
+  .print-table td,
+  table.meal-table th,
+  table.meal-table td {
     border: 1px solid #d1d5db !important;
-    padding: 6px 8px !important;
+    padding: 4px 6px !important;
     vertical-align: top !important;
     line-height: 1.3 !important;
     white-space: normal !important;   /* Wraps long text instead of squishing */
   }
 
-  .print-table th {
+  .print-table th,
+  table.meal-table th {
     background: #f3f4f6 !important;   /* slate-100 */
     font-weight: 600 !important;
     text-align: left !important;
+  }
+
+  /* Light row striping */
+  .print-table tbody tr:nth-child(even),
+  table.meal-table tbody tr:nth-child(even) {
+    background: #f9fafb !important;
+  }
+
+  /* ====== MEAL CELL CONTENT ====== */
+  .meal-name {
+    display: block !important;
+    font-weight: 600 !important;
+    margin-bottom: 2px !important;
+  }
+
+  .meal-calories {
+    display: block !important;
+    font-size: 10px !important;
+    color: #6b7280 !important;
+  }
+
+  .meal-badges {
+    margin-top: 2px !important;
+    font-size: 9px !important;
+    color: #4b5563 !important;
+  }
+
+  .badge-pill {
+    display: inline-block !important;
+    border-radius: 999px !important;
+    border: 1px solid #e5e7eb !important;
+    padding: 1px 5px !important;
+    margin-right: 4px !important;
+  }
+
+  /* ====== 3 vs 5 MEAL TUNING ====== */
+  .meals-3 table.meal-table td,
+  .meals-3 table.meal-table th {
+    padding: 5px 7px !important;
+  }
+
+  .meals-5 table.meal-table {
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+    transform: scale(0.96);
+    transform-origin: top left;
+  }
+
+  .meals-5 table.meal-table td,
+  .meals-5 table.meal-table th {
+    padding: 3px 4px !important;
+  }
+
+  /* ====== PAGE BREAK HELPERS (for future grocery/recipes pages) ====== */
+  .print-page-break {
+    page-break-before: always;
   }
 }

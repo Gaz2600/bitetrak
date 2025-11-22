@@ -1,0 +1,48 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum MealType {
+  BREAKFAST
+  LUNCH
+  DINNER
+  SMALL_MEAL
+}
+
+enum DietStyle {
+  BALANCED
+  KETO
+  HIGH_PROTEIN
+  LOW_FODMAP
+  MEDITERRANEAN
+}
+
+model Meal {
+  id           String          @id @default(uuid())
+  name         String
+  mealType     MealType
+  baseCalories Int
+
+  isIbsSafe    Boolean         @default(false)
+  isGlutenFree Boolean         @default(false)
+  isImmuneSafe Boolean         @default(false)
+
+  dietStyles   MealDietStyle[]
+
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model MealDietStyle {
+  id        Int       @id @default(autoincrement())
+  meal      Meal      @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  mealId    String
+  dietStyle DietStyle
+
+  @@unique([mealId, dietStyle])
+}

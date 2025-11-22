@@ -95,10 +95,21 @@ export default function RootLayout({
         <footer className="bg-slate-950 text-slate-400">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <p className="text-xs">
-              © {new Date().getFullYear()} BiteTrak. Not medical advice. Always
-              consult your care team before changing your diet.
-            </p>
-
+			  © {new Date().getFullYear()} BiteTrak.{" "}
+			  <span className="whitespace-nowrap">
+				A{" "}
+				<a
+				  href="https://littlesprucelabs.com"
+				  target="_blank"
+				  rel="noopener noreferrer"
+				  className="text-emerald-300 hover:text-emerald-200 font-medium"
+				>
+				  Little Spruce Labs
+				</a>{" "}
+				project.
+			  </span>{" "}
+			  Not medical advice. Always consult your care team before changing your diet.
+			</p>
             {/* External links — KEEP as <a> */}
             <div className="flex gap-4 text-xs">
               <a href="#" className="hover:text-slate-200">
