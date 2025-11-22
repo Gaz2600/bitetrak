@@ -3,14 +3,36 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   MEALS,
   MealTemplate,
-  MealType,
-  DietStyle,
-  Ingredient,
 } from "@/data/meals";
 
 console.log("BiteTrak: MEALS loaded =", MEALS.length);
 
+// Diet styles used by the planner (not exported by @/data/meals)
+type DietStyle =
+  | "balanced"
+  | "keto"
+  | "high-protein"
+  | "low-fodmap"
+  | "mediterranean";
+
+// Simple ingredient shape for recipes/shopping list
+type Ingredient = {
+  name: string;
+  unit?: string;
+  quantity?: number;
+};
+
+type MealType = "breakfast" | "lunch" | "dinner" | "small-meal";
+
 type AllergyKey = "dairy" | "eggs" | "nuts" | "shellfish" | "soy";
+
+type MacroMode = "calculator" | "custom";
+
+type MacrosPayload = {
+  proteinPct?: number;
+  carbPct?: number;
+  fatPct?: number;
+};
 
 type GeneratePlanRequest = {
   calories?: number;
@@ -23,6 +45,9 @@ type GeneratePlanRequest = {
   lowHistamine?: boolean;
   lowOxalate?: boolean;
   gerdFriendly?: boolean;
+  // NEW: macro settings from the dashboard
+  macroMode?: MacroMode;
+  macros?: MacrosPayload | null;
 };
 
 type MealRecipe = {
@@ -172,11 +197,13 @@ function buildTextHaystack(meal: MealTemplate): string {
   const parts: string[] = [];
   parts.push(meal.name.toLowerCase());
 
-  if (meal.recipe?.ingredients) {
-    for (const ing of meal.recipe.ingredients) {
-      if (ing.name) parts.push(ing.name.toLowerCase());
-    }
+const recipe = (meal as any).recipe;
+
+if (recipe?.ingredients) {
+  for (const ing of recipe.ingredients) {
+    if (ing.name) parts.push(ing.name.toLowerCase());
   }
+}
 
   return parts.join(" ");
 }
@@ -530,6 +557,13 @@ export async function POST(req: NextRequest) {
     const lowOxalate = Boolean(body.lowOxalate);
     const gerdFriendly = Boolean(body.gerdFriendly);
 
+    // These are accepted from the client; for now, they are not used
+    // but having them typed means the endpoint "supports" them.
+    const macroMode = body.macroMode ?? "calculator";
+    const macros = body.macros ?? null;
+    // If you want to sanity-check later:
+    // console.log("Macro settings:", { macroMode, macros });
+
     const flags: string[] = [];
     if (requireIbsSafe) flags.push("IBS / low-FODMAP focus");
     if (requireGlutenFree) flags.push("Gluten-free only");
@@ -600,16 +634,18 @@ export async function POST(req: NextRequest) {
 
         remaining -= chosenTemplate.baseCalories;
 
-        mealsForDay.push({
-          label: labelForIndex(slot, mealsPerDay),
-          name: chosenTemplate.name,
-          kcal: chosenTemplate.baseCalories,
-          tag: buildTag(chosenTemplate),
-          recipe: {
-            ingredients: chosenTemplate.recipe?.ingredients ?? [],
-            steps: chosenTemplate.recipe?.steps ?? [],
-          },
-        });
+		const chosenRecipe = (chosenTemplate as any).recipe;
+
+		mealsForDay.push({
+		  label: labelForIndex(slot, mealsPerDay),
+		  name: chosenTemplate.name,
+		  kcal: chosenTemplate.baseCalories,
+		  tag: buildTag(chosenTemplate),
+		  recipe: {
+			ingredients: chosenRecipe?.ingredients ?? [],
+			steps: chosenRecipe?.steps ?? [],
+		  },
+		});
       }
 
       const totalCalories = mealsForDay.reduce((sum, m) => sum + m.kcal, 0);

@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -6,6 +8,10 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
+/**
+ * ---------- EXISTING ENUMS (unchanged) ----------
+ */
 
 enum MealType {
   BREAKFAST
@@ -22,22 +28,146 @@ enum DietStyle {
   MEDITERRANEAN
 }
 
+/**
+ * ---------- USERS & PREFERENCES ----------
+ */
+
+model User {
+  id        String   @id @default(uuid())
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  preferences  UserPreferences?
+  mealPlans    MealPlan[]
+  exerciseLogs ExerciseLog[]
+}
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  // daily calorie target
+  calories Int
+
+  // macro settings
+  macroMode  String // "calculator" | "custom"
+  proteinPct Int
+  carbPct    Int
+  fatPct     Int
+
+  // dietary flags
+  lowFodmap  Boolean @default(false)
+  glutenFree Boolean @default(false)
+  dairyFree  Boolean @default(false)
+  nutFree    Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/**
+ * ---------- INGREDIENTS / RECIPES / MEALS ----------
+ */
+
+model Ingredient {
+  id       Int     @id @default(autoincrement())
+  name     String
+  category String?
+
+  // per 100g nutrients
+  kcalPer100g    Float
+  proteinPer100g Float
+  carbsPer100g   Float
+  fatPer100g     Float
+
+  containsGluten Boolean @default(false)
+  containsDairy  Boolean @default(false)
+  containsNuts   Boolean @default(false)
+  lowFodmap      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recipeIngredients RecipeIngredient[]
+  shoppingListItems ShoppingListItem[]
+}
+
+model Recipe {
+  id           Int     @id @default(autoincrement())
+  name         String
+  description  String?
+  instructions String? // markdown or plain text
+
+  servings Int    @default(1)
+  kcal     Int?
+  proteinG Float?
+  carbsG   Float?
+  fatG     Float?
+
+  isIbsSafe    Boolean?
+  isGlutenFree Boolean?
+  isImmuneSafe Boolean?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ingredients RecipeIngredient[]
+  meals       Meal[]
+}
+
+model RecipeIngredient {
+  id Int @id @default(autoincrement())
+
+  recipe   Recipe @relation(fields: [recipeId], references: [id])
+  recipeId Int
+
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredientId Int
+
+  quantity Float // e.g. 150
+  unit     String // "g", "ml", "tbsp", etc.
+}
+
+/**
+ * EXTENDED VERSION OF YOUR EXISTING Meal MODEL
+ * - Keeps existing fields
+ * - Adds macros + recipe link + timestamps used by new features
+ */
 model Meal {
-  id           String          @id @default(uuid())
+  id           String   @id @default(uuid())
   name         String
   mealType     MealType
   baseCalories Int
 
-  isIbsSafe    Boolean         @default(false)
-  isGlutenFree Boolean         @default(false)
-  isImmuneSafe Boolean         @default(false)
+  // macro fields (per serving)
+  proteinG Float?
+  carbsG   Float?
+  fatG     Float?
 
-  dietStyles   MealDietStyle[]
+  // flags (unchanged)
+  isIbsSafe    Boolean @default(false)
+  isGlutenFree Boolean @default(false)
+  isImmuneSafe Boolean @default(false)
 
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  // tag/label for filtering or display
+  tag String? // "high-protein", etc.
+
+  // optional link to a recipe
+  recipe   Recipe? @relation(fields: [recipeId], references: [id])
+  recipeId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  dietStyles MealDietStyle[]
+  dayMeals   DayMeal[]
 }
 
+/**
+ * Existing join table between Meal and DietStyle (unchanged).
+ */
 model MealDietStyle {
   id        Int       @id @default(autoincrement())
   meal      Meal      @relation(fields: [mealId], references: [id], onDelete: Cascade)
@@ -45,4 +175,112 @@ model MealDietStyle {
   dietStyle DietStyle
 
   @@unique([mealId, dietStyle])
+}
+
+/**
+ * ---------- MEAL PLANS & DAY MEALS ----------
+ */
+
+model MealPlan {
+  id Int @id @default(autoincrement())
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  title     String?
+  startDate DateTime // e.g. Monday of the week
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  days         DayMeal[]
+  shoppingList ShoppingList?
+}
+
+model DayMeal {
+  id Int @id @default(autoincrement())
+
+  mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id])
+  mealPlanId Int
+
+  meal   Meal   @relation(fields: [mealId], references: [id])
+  mealId String // Meal.id is String UUID
+
+  dayIndex Int // 0=Mon, 1=Tue, ...
+  slot     String? // "breakfast", "lunch", "dinner", "snack"
+}
+
+/**
+ * ---------- SHOPPING LIST ----------
+ */
+
+model ShoppingList {
+  id Int @id @default(autoincrement())
+
+  mealPlan   MealPlan @relation(fields: [mealPlanId], references: [id])
+  mealPlanId Int      @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items ShoppingListItem[]
+}
+
+model ShoppingListItem {
+  id Int @id @default(autoincrement())
+
+  shoppingList   ShoppingList @relation(fields: [shoppingListId], references: [id])
+  shoppingListId Int
+
+  ingredient   Ingredient? @relation(fields: [ingredientId], references: [id])
+  ingredientId Int?
+
+  name     String // fallback label if ingredient is null
+  quantity Float
+  unit     String
+  checked  Boolean @default(false)
+}
+
+/**
+ * ---------- EXERCISES & LOGGING ----------
+ */
+
+model Exercise {
+  id        Int     @id @default(autoincrement())
+  name      String
+  category  String? // "strength", "cardio", etc.
+  equipment String? // "barbell", "bodyweight", etc.
+  metValue  Float? // optional, for calories
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logs ExerciseLog[]
+}
+
+model ExerciseLog {
+  id Int @id @default(autoincrement())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId Int
+
+  date DateTime
+
+  // strength
+  sets     Int?
+  reps     Int?
+  weightKg Float?
+
+  // cardio
+  durationMin Float?
+  distanceKm  Float?
+
+  caloriesBurned Int?
+  notes          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

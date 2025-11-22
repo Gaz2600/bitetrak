@@ -63,6 +63,22 @@ function prettyDietLabel(diet: string) {
   }
 }
 
+// Default macro splits depending on diet
+function getAutoMacros(diet: string) {
+  switch (diet) {
+    case "high-protein":
+      return { protein: 35, carbs: 35, fat: 30 };
+    case "keto":
+      return { protein: 20, carbs: 5, fat: 75 };
+    case "mediterranean":
+      return { protein: 25, carbs: 45, fat: 30 };
+    case "low-fodmap":
+      return { protein: 30, carbs: 40, fat: 30 };
+    default:
+      return { protein: 30, carbs: 40, fat: 30 };
+  }
+}
+
 export default function DashboardClient() {
   // Wizard step: 1 = basics, 2 = constraints, 3 = print/layout
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -77,6 +93,13 @@ export default function DashboardClient() {
   const [glutenFree, setGlutenFree] = useState(false);
   const [immuneSafe, setImmuneSafe] = useState(false);
   const [mealsPerDay, setMealsPerDay] = useState<"3" | "5">("3");
+
+  // Macro settings
+  const [macroMode, setMacroMode] =
+    useState<"calculator" | "custom">("calculator");
+  const [proteinPct, setProteinPct] = useState("30");
+  const [carbPct, setCarbPct] = useState("40");
+  const [fatPct, setFatPct] = useState("30");
 
   // Food allergies
   const [allergies, setAllergies] = useState<AllergyKey[]>([]);
@@ -123,6 +146,23 @@ export default function DashboardClient() {
           setImmuneSafe(saved.immuneSafe);
         if (saved.mealsPerDay === "3" || saved.mealsPerDay === "5") {
           setMealsPerDay(saved.mealsPerDay);
+        }
+
+        // Macros
+        if (
+          saved.macroMode === "calculator" ||
+          saved.macroMode === "custom"
+        ) {
+          setMacroMode(saved.macroMode);
+        }
+        if (saved.proteinPct !== undefined) {
+          setProteinPct(String(saved.proteinPct));
+        }
+        if (saved.carbPct !== undefined) {
+          setCarbPct(String(saved.carbPct));
+        }
+        if (saved.fatPct !== undefined) {
+          setFatPct(String(saved.fatPct));
         }
 
         if (Array.isArray(saved.allergies)) {
@@ -205,6 +245,11 @@ export default function DashboardClient() {
       glutenFree,
       immuneSafe,
       mealsPerDay,
+      // macros
+      macroMode,
+      proteinPct,
+      carbPct,
+      fatPct,
       allergies,
       lowHistamine,
       lowOxalate,
@@ -237,6 +282,10 @@ export default function DashboardClient() {
     glutenFree,
     immuneSafe,
     mealsPerDay,
+    macroMode,
+    proteinPct,
+    carbPct,
+    fatPct,
     allergies,
     lowHistamine,
     lowOxalate,
@@ -266,6 +315,13 @@ export default function DashboardClient() {
 
   const numericMealsPerDay = Number(mealsPerDay) || 3;
 
+  const macroTotal =
+    (Number(proteinPct) || 0) +
+    (Number(carbPct) || 0) +
+    (Number(fatPct) || 0);
+
+  const autoMacros = getAutoMacros(diet);
+
   function toggleAllergy(key: AllergyKey) {
     setAllergies((prev) =>
       prev.includes(key) ? prev.filter((a) => a !== key) : [...prev, key]
@@ -293,6 +349,19 @@ export default function DashboardClient() {
           lowHistamine,
           lowOxalate,
           gerdFriendly,
+          macroMode,
+          macros:
+            macroMode === "custom"
+              ? {
+                  proteinPct: Number(proteinPct) || undefined,
+                  carbPct: Number(carbPct) || undefined,
+                  fatPct: Number(fatPct) || undefined,
+                }
+              : {
+                  proteinPct: autoMacros.protein,
+                  carbPct: autoMacros.carbs,
+                  fatPct: autoMacros.fat,
+                },
         }),
       });
 
@@ -335,7 +404,7 @@ export default function DashboardClient() {
     {
       id: 1,
       title: "Basics",
-      subtitle: "Calories, diet style, meals per day",
+      subtitle: "Calories, diet style, macros, meals per day",
     },
     {
       id: 2,
@@ -488,6 +557,107 @@ export default function DashboardClient() {
                       <p className="text-[11px] text-slate-400">
                         We&apos;ll try to stay near this per day.
                       </p>
+
+                      {/* Macros block */}
+                      <div className="mt-3 space-y-1">
+                        <label className="text-[11px] font-medium text-slate-700">
+                          Macros (optional)
+                        </label>
+                        <div className="inline-flex rounded-2xl bg-slate-50 p-1 border border-slate-200">
+                          <button
+                            type="button"
+                            onClick={() => setMacroMode("calculator")}
+                            className={`px-3 py-1.5 text-[11px] font-medium rounded-xl ${
+                              macroMode === "calculator"
+                                ? "bg-white text-slate-900 shadow-sm border border-slate-200"
+                                : "text-slate-500"
+                            }`}
+                          >
+                            Auto
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMacroMode("custom")}
+                            className={`px-3 py-1.5 text-[11px] font-medium rounded-xl ${
+                              macroMode === "custom"
+                                ? "bg-white text-slate-900 shadow-sm border border-slate-200"
+                                : "text-slate-500"
+                            }`}
+                          >
+                            Custom
+                          </button>
+                        </div>
+                        {macroMode === "calculator" && (
+                          <p className="text-[11px] text-slate-400">
+                            We&apos;ll use a default macro split based on your
+                            diet style:{" "}
+                            <span className="font-semibold">
+                              {autoMacros.protein}% protein /{" "}
+                              {autoMacros.carbs}% carbs / {autoMacros.fat}% fat
+                            </span>
+                            . Switch to Custom to fine-tune it.
+                          </p>
+                        )}
+                        {macroMode === "custom" && (
+                          <div className="space-y-1">
+                            <div className="grid grid-cols-3 gap-2">
+                              <div>
+                                <label className="block text-[10px] text-slate-500 mb-0.5">
+                                  Protein %
+                                </label>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={100}
+                                  value={proteinPct}
+                                  onChange={(e) =>
+                                    setProteinPct(e.target.value)
+                                  }
+                                  className="w-full rounded-lg border border-slate-200 px-2 py-1 text-[11px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] text-slate-500 mb-0.5">
+                                  Carbs %
+                                </label>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={100}
+                                  value={carbPct}
+                                  onChange={(e) => setCarbPct(e.target.value)}
+                                  className="w-full rounded-lg border border-slate-200 px-2 py-1 text-[11px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-[10px] text-slate-500 mb-0.5">
+                                  Fat %
+                                </label>
+                                <input
+                                  type="number"
+                                  min={0}
+                                  max={100}
+                                  value={fatPct}
+                                  onChange={(e) => setFatPct(e.target.value)}
+                                  className="w-full rounded-lg border border-slate-200 px-2 py-1 text-[11px] text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                />
+                              </div>
+                            </div>
+                            <p
+                              className={`text-[10px] ${
+                                macroTotal === 100
+                                  ? "text-emerald-600"
+                                  : "text-amber-600"
+                              }`}
+                            >
+                              Total: {macroTotal}%{" "}
+                              {macroTotal === 100
+                                ? "· Perfect!"
+                                : "· For best results, aim for 100%."}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="space-y-1.5 md:col-span-2">
